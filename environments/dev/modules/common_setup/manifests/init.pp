@@ -6,9 +6,8 @@ class common_setup {
           true => "--setopt=group_package_types=optional,default,mandatory",
           default => "installed"
         }
-        exec { "Installing $name yum group":
+        exec { "Installing $name dnf group":
           command => "dnf -y groupinstall $pkg_types_arg $name",
-          # unless => "yum -y groupinstall $pkg_types_arg $name --downloadonly",
           onlyif => "echo '! dnf grouplist $name | grep -E \"^Installed\" > /dev/null' |bash",
           timeout => 600,
         }
