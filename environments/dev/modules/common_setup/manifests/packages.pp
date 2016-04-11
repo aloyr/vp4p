@@ -6,6 +6,7 @@ class common_setup::packages {
     'default' => 'vim',
   }
   package { "atop"    : ensure => installed }
+  package { "git"     : ensure => installed }
   package { "iftop"   : ensure => installed }
   package { "iotop"   : ensure => installed }
   package { "iptraf"  : ensure => installed }
