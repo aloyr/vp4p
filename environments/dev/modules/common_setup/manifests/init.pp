@@ -16,5 +16,5 @@ class common_setup {
     }
   }
   class {'common_setup::packages': }
-  dnfgroup{ 'Development Tools': }
+  common_setup::dnfgroup { 'Development Tools': }
 }
