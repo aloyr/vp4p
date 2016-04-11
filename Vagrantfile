@@ -146,9 +146,14 @@ Vagrant.configure(2) do |config|
     if [ ! -f /etc/yum.repos.d/puppetlabs-pc1.repo ]; then
       sudo rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-pc1-fedora-22.noarch.rpm
     fi
-    if [ ! -f /opt/puppetlabs ]; then
+    if [ ! -d /opt/puppetlabs ]; then
       sudo dnf install -y puppet-agent
     fi
   SHELL
+  config.vm.provision "puppet" do |puppet|
+    puppet.environment_path = "environments"
+    puppet.environment = "dev"
+    # puppet.options = '--verbose --debug'
+  end
 
 end
