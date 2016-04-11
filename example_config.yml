@@ -1,0 +1,5 @@
+box: "box-cutter/fedora22"
+box_url: "https://atlas.hashicorp.com/box-cutter/fedora22"
+hostip: 192.168.35.12
+hostname: "vagrant.dev"
+timezone: "America/Chicago"
