@@ -11,6 +11,7 @@ class common_setup::packages {
   package { "iotop"   : ensure => installed }
   package { "iptraf"  : ensure => installed }
   package { "lshw"    : ensure => installed }
+  package { "mlocate" : ensure => installed }
   package { "nload"   : ensure => installed }
   package { "pv"      : ensure => installed }
   package { "rsync"   : ensure => installed }
@@ -21,4 +22,5 @@ class common_setup::packages {
   package { "tmux"    : ensure => installed }
   package { $vim      : ensure => installed }
   package { "wget"    : ensure => installed }
+  package { "which"   : ensure => installed }
 }
