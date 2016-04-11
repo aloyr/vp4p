@@ -16,5 +16,6 @@ class common_setup {
     }
   }
   class {'common_setup::packages': }
+  class {'common_setup::root_ssh': }
   common_setup::dnfgroup { 'Development Tools': }
 }

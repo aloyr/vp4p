@@ -154,6 +154,12 @@ Vagrant.configure(2) do |config|
     puppet.environment_path = "environments"
     puppet.environment = "dev"
     # puppet.options = '--verbose --debug'
+    keyfile = '~/.ssh/id_rsa.pub'.gsub('~', ENV['HOME'])
+    if File.file?keyfile
+      keycontents = File.open(keyfile, 'rb').read
+      puppet.facter['ssh_key'] = keycontents.split(' ')[1]
+      puppet.facter['ssh_key_type'] = keycontents.split(' ')[0]
+    end
   end
 
 end
