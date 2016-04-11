@@ -8,7 +8,7 @@ class common_setup::tools{
         }
         exec { "Installing $name dnf group":
           command => "dnf -y groupinstall $pkg_types_arg $name",
-          onlyif => "echo '! dnf grouplist $name | grep -E \"^Installed\" > /dev/null' |bash",
+          onlyif => "echo '! dnf grouplist \"$name\" | grep -E \"^Installed\" > /dev/null' |bash",
           timeout => 600,
         }
       }
