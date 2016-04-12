@@ -15,12 +15,14 @@ $settings = YAML.load_file(config_file)
 
 # define default values
 $defaults = {
-  'box'      => 'vp4p/fedora22',
-  'box_url'  => 'http://hid.gl/vp4p-fedora22.box',
-  'hostip'   => '192.168.35.12',
-  'hostname' => Socket.gethostname + '.dev',
-  'memory'   => '2048',
-  'timezone' => 'America/Chicago',
+  'box'            => 'vp4p/fedora22',
+  'box_url'        => 'http://hid.gl/vp4p-fedora22.box',
+  'database_cache' => '128M',
+  'database_pool'  => '1G',
+  'hostip'         => '192.168.35.12',
+  'hostname'       => Socket.gethostname + '.dev',
+  'memory'         => '2048',
+  'timezone'       => 'America/Chicago',
 }
 
 # sanity checks to the yaml configuration file
@@ -150,14 +152,20 @@ Vagrant.configure(2) do |config|
     fi
   SHELL
   config.vm.provision "puppet" do |puppet|
+    # puppet.options = '--verbose --debug'
     puppet.environment_path = "environments"
     puppet.environment = "dev"
-    # puppet.options = '--verbose --debug'
     keyfile = '~/.ssh/id_rsa.pub'.gsub('~', ENV['HOME'])
     if File.file?keyfile
       keycontents = File.open(keyfile, 'rb').read
-      puppet.facter['ssh_key'] = keycontents.split(' ')[1]
-      puppet.facter['ssh_key_type'] = keycontents.split(' ')[0]
+
+      puppet.facter['vagrant']        = 1
+      puppet.facter['database_cache'] = getSetting('database_cache')
+      puppet.facter['database_pool']  = getSetting('database_pool')
+      puppet.facter['ssh_key']        = keycontents.split(' ')[1]
+      puppet.facter['ssh_key_type']   = keycontents.split(' ')[0]
+      puppet.facter['zonefile']       = getSetting('timezone')
+
     end
   end
 

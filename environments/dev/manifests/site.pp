@@ -4,4 +4,5 @@ Exec {
 
 node 'default' {
   class {'common_setup': }
+  class {'lamp': require => Class['common_setup'] }
 }
