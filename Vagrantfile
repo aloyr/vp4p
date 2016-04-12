@@ -15,8 +15,8 @@ $settings = YAML.load_file(config_file)
 
 # define default values
 $defaults = {
-  'box'      => 'box-cutter/fedora22',
-  'box_url'  => 'https://atlas.hashicorp.com/box-cutter/fedora22',
+  'box'      => 'vp4p/fedora22',
+  'box_url'  => 'http://hid.gl/vp4p-fedora22.box',
   'hostip'   => '192.168.35.12',
   'hostname' => Socket.gethostname + '.dev',
   'memory'   => '2048',
