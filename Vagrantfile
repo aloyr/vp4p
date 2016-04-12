@@ -10,9 +10,8 @@ require 'yaml'
 config_file = 'config.yml'
 raise Vagrant::Errors::VagrantError.new, "ERROR: config.yml file missing." if not Pathname(config_file).exist?
 
-# setup settings variable, dnsserver and some defaults
+# setup settings variable and some defaults
 $settings = YAML.load_file(config_file)
-dnsServer = '8.8.8.8'
 
 # define default values
 $defaults = {
