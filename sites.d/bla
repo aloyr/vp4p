@@ -1,7 +1,0 @@
-settings_php:
-  - "$conf['environment_indicator_text'] = 'DEV | USER';"
-  - "$conf['environment_indicator_color'] = 'dark-red';"
-  - "$conf['environment_indicator_enabled'] = TRUE;"
-  - "$conf['stage_file_proxy_origin'] = 'http://www.example.com';"
-  - "$conf['stage_file_proxy_origin_dir'] = 'sites/default/files';"
-  - "$conf['page_compression'] = FALSE;"

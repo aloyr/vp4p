@@ -180,13 +180,7 @@ Vagrant.configure(2) do |config|
       puppet.facter['ssh_key_type']   = keycontents.split(' ')[0]
       puppet.facter['zonefile']       = getSetting('timezone')
       puppet.facter['sites']          = getSites()
-      # getSites().each do |site_name, site_data|
-      #   if puppet.facter['sites'] == nil
-      #     puppet.facter['sites'] = {}
-      #   end
-      #   puppet.facter['sites'][site_name] = site_data
-      # end
-    end
+   end
   end
 
 end
