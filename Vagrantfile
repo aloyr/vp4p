@@ -28,8 +28,7 @@ $defaults = {
 # sanity checks to the yaml configuration file
 def checkPlugin(pluginName)
   unless Vagrant.has_plugin?(pluginName)
-    raise Vagrant::Errors::VagrantError.new, pluginName + ' plugin missing. Install it with "sudo vagr
-ant plugin install ' + pluginName + '"'
+    raise Vagrant::Errors::VagrantError.new, pluginName + ' plugin missing. Install it with "sudo vagrant plugin install ' + pluginName + '"'
   end
 end
 
