@@ -57,7 +57,7 @@ def getSites()
     site_data = YAML.load_file(site_file)
     site_name = site_data['site_name'].downcase.gsub(/[^a-zA-Z0-9]+/, '-')
     site_data['site_name'] = site_name
-    site_data['site_root'] = site_data['site_root']['vm']
+    site_data.delete('site_root_local')
     sites[site_name] = site_data
   end
   return sites
