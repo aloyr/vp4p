@@ -1,7 +1,7 @@
 # base of this file retrieved from https://www.nginx.com/resources/admin-guide/restricting-access/
 server {
-    server_name example.com;
-    root /var/www/drupal8; ## <-- Your only path reference.
+    server_name <%= @site_domain %>;
+    root /var/www/<%= @site_name %>; ## <-- Your only path reference.
 
     location = /favicon.ico {
         log_not_found off;
