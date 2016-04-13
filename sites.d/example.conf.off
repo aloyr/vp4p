@@ -1,5 +1,5 @@
 site_name: 'example'
-site_root: {local: '~/Sites/example', vm: '/var/www/example'}
+site_root_local: '~/Sites/example'
 
 languages:
   - 'en'
