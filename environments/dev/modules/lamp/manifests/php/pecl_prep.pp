@@ -1,4 +1,4 @@
-class lamp::php_pecl_prep {
+class lamp::php::pecl_prep {
   package {'mariadb-devel' : ensure => 'installed'}
   package {'mariadb-libs'  : ensure => 'installed'}
   package {'php-devel'     : ensure => 'installed'}

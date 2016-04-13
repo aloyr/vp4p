@@ -1,4 +1,4 @@
-class lamp::php_ini_fix {
+class lamp::php::ini_fix {
   exec { 'php_ini':
     command => "sed -i \\
             -e 's/^\\(allow_url_fopen\\) = Off/\\1 = On/g' \\

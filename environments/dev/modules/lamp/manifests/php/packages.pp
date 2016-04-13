@@ -1,4 +1,4 @@
-class lamp::php_packages {
+class lamp::php::packages {
   package {'php'                    : ensure => 'installed'}
   package {'php-cli'                : ensure => 'installed'}
   package {'php-common'             : ensure => 'installed'}
