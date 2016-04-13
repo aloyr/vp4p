@@ -50,6 +50,19 @@ def getSetting(value)
   end
 end
 
+# process site configurations
+def getSites()
+  sites = {}
+  Dir.glob('sites.d/*conf').each do |site_file|
+    site_data = YAML.load_file(site_file)
+    site_name = site_data['site_name'].downcase.gsub(/[^a-zA-Z0-9]+/, '-')
+    site_data['site_name'] = site_name
+    site_data['site_root'] = site_data['site_root']['vm']
+    sites[site_name] = site_data
+  end
+  return sites
+end
+
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
@@ -153,6 +166,7 @@ Vagrant.configure(2) do |config|
   SHELL
   config.vm.provision "puppet" do |puppet|
     # puppet.options = '--verbose --debug'
+    # puppet.structured_facts = true
     puppet.environment_path = "environments"
     puppet.environment = "dev"
     keyfile = '~/.ssh/id_rsa.pub'.gsub('~', ENV['HOME'])
@@ -165,7 +179,13 @@ Vagrant.configure(2) do |config|
       puppet.facter['ssh_key']        = keycontents.split(' ')[1]
       puppet.facter['ssh_key_type']   = keycontents.split(' ')[0]
       puppet.facter['zonefile']       = getSetting('timezone')
-
+      puppet.facter['sites']          = getSites()
+      # getSites().each do |site_name, site_data|
+      #   if puppet.facter['sites'] == nil
+      #     puppet.facter['sites'] = {}
+      #   end
+      #   puppet.facter['sites'][site_name] = site_data
+      # end
     end
   end
 
