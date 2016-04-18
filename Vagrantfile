@@ -1,6 +1,7 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+require 'json'
 require 'pathname'
 require 'socket'
 require 'timeout'
@@ -54,10 +55,22 @@ def getSites()
   sites = {}
   Dir.glob('sites.d/*conf').each do |site_file|
     site_data = YAML.load_file(site_file)
+    site_data.delete('settings_php')
     site_name = site_data['site_name'].downcase.gsub(/[^a-zA-Z0-9]+/, '-')
     site_data['site_name'] = site_name
     site_data.delete('site_root_local')
     sites[site_name] = site_data
+    site_domain = site_name + '.dev'
+    site_aliases = [site_domain, 'www.' + site_domain]
+    if site_data['languages'] != nil
+      site_data['languages'].each do |language|
+        site_aliases.concat([language + '.' + site_domain])
+      end
+    end
+    if $settings['aliases'] == nil
+      $settings['aliases'] = []
+    end
+    $settings['aliases'].concat(site_aliases)
   end
   return sites
 end
@@ -77,6 +90,10 @@ Vagrant.configure(2) do |config|
   config.vm.box = getSetting('box')
   config.vm.box_url = getSetting('box_url')
   config.vm.hostname = getSetting('hostname')
+  sites = getSites()
+  config.hostsupdater.aliases = $settings['aliases']
+  puts 'aliases'
+  puts config.hostsupdater.aliases
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -178,7 +195,7 @@ Vagrant.configure(2) do |config|
       puppet.facter['ssh_key']        = keycontents.split(' ')[1]
       puppet.facter['ssh_key_type']   = keycontents.split(' ')[0]
       puppet.facter['zonefile']       = getSetting('timezone')
-      puppet.facter['sites']          = getSites()
+      puppet.facter['sites']          = sites.to_json
    end
   end
 

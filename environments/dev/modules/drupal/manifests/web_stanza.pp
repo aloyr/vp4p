@@ -1,7 +1,7 @@
 class drupal::web_stanza {
   if defined('$::sites') {
-    $::sites.each |String $key, Hash $value| {
-      # notice("key: ${key} - hash: ${value}")
+    parsejson($::sites).each |String $key, Hash $value| {
+      notice("key: ${key} - hash: ${value}")
       $site_name   = $value['site_name']
       $site_domain = "${site_name}.dev"
       file {$key:
