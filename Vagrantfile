@@ -55,7 +55,7 @@ def getSites()
   sites = {}
   Dir.glob('sites.d/*conf').each do |site_file|
     site_data = YAML.load_file(site_file)
-    site_data.delete('settings_php')
+    # site_data.delete('settings_php')
     site_name = site_data['site_name'].downcase.gsub(/[^a-zA-Z0-9]+/, '-')
     site_data['site_name'] = site_name
     site_data.delete('site_root_local')

@@ -1,6 +1,8 @@
 config.yml
 .vagrant
 sites.d/*conf
+sites.d/*conf*
+!sites.d/example.conf.off
 
 # Created by https://www.gitignore.io/api/vim,phpstorm
 
