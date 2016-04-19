@@ -1,5 +1,6 @@
 site_name: 'example'
 site_root_local: '~/Sites/example'
+site_root_type: 'rsync'
 
 languages:
   - 'en'

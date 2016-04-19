@@ -55,10 +55,8 @@ def getSites()
   sites = {}
   Dir.glob('sites.d/*conf').each do |site_file|
     site_data = YAML.load_file(site_file)
-    # site_data.delete('settings_php')
     site_name = site_data['site_name'].downcase.gsub(/[^a-zA-Z0-9]+/, '-')
     site_data['site_name'] = site_name
-    site_data.delete('site_root_local')
     sites[site_name] = site_data
     site_domain = site_name + '.dev'
     site_aliases = [site_domain, 'www.' + site_domain]
@@ -71,6 +69,18 @@ def getSites()
       $settings['aliases'] = []
     end
     $settings['aliases'].concat(site_aliases)
+    if site_data['site_root_local'] != nil
+      if $settings['shares'] == nil
+        $settings['shares'] = {}
+      end
+      $settings['shares'][site_name] = {
+        'local' => site_data['site_root_local'],
+        'vm'    => '/var/www/' + site_name
+      }
+      if site_data['site_root_type'] != nil
+        $settings['shares'][site_name]['type'] = site_data['site_root_type']
+      end
+    end
   end
   return sites
 end
@@ -92,6 +102,7 @@ Vagrant.configure(2) do |config|
   config.vm.hostname = getSetting('hostname')
   sites = getSites()
   config.hostsupdater.aliases = $settings['aliases']
+  puts $settings['shares']
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
