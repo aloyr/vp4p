@@ -71,15 +71,16 @@ def getSites()
     $settings['aliases'].concat(site_aliases)
     if site_data['site_root_local'] != nil
       if $settings['shares'] == nil
-        $settings['shares'] = {}
+        $settings['shares'] = []
       end
-      $settings['shares'][site_name] = {
+      folder = {
         'local' => site_data['site_root_local'],
         'vm'    => '/var/www/' + site_name
       }
       if site_data['site_root_type'] != nil
-        $settings['shares'][site_name]['type'] = site_data['site_root_type']
+        folder['type'] = site_data['site_root_type']
       end
+      $settings['shares'].push(folder)
     end
   end
   return sites
@@ -102,7 +103,6 @@ Vagrant.configure(2) do |config|
   config.vm.hostname = getSetting('hostname')
   sites = getSites()
   config.hostsupdater.aliases = $settings['aliases']
-  puts $settings['shares']
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -137,7 +137,13 @@ Vagrant.configure(2) do |config|
   config.vm.synced_folder ".", "/vagrant",  :mount_options => ["dmode=777,fmode=766"]
   if $settings['shares'] != nil
     $settings['shares'].each do |item|
-      config.vm.synced_folder item['local'], item['vm'], mount_options: ["dmode=777,fmode=766,uid=48,gid=48"]
+      puts item
+      if item['type'] != nil && item['type'] == 'rsync'
+        config.vm.synced_folder item['local'].gsub('~', ENV['HOME']), item['vm'], owner: 'nginx', group: 'nginx', type: 'rsync', rsync__auto: true
+      else
+        config.vm.synced_folder item['local'].gsub('~', ENV['HOME']), item['vm'], owner: 'nginx', group: 'nginx'
+      end
+      # config.vm.synced_folder item['local'].gsub('~', ENV['HOME']), item['vm'], mount_options: ["dmode=777,fmode=766,uid=48,gid=48"]
     end
   end
 
