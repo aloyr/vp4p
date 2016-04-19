@@ -143,7 +143,6 @@ Vagrant.configure(2) do |config|
       else
         config.vm.synced_folder item['local'].gsub('~', ENV['HOME']), item['vm'], owner: 'nginx', group: 'nginx'
       end
-      # config.vm.synced_folder item['local'].gsub('~', ENV['HOME']), item['vm'], mount_options: ["dmode=777,fmode=766,uid=48,gid=48"]
     end
   end
 
