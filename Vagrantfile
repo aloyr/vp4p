@@ -92,8 +92,6 @@ Vagrant.configure(2) do |config|
   config.vm.hostname = getSetting('hostname')
   sites = getSites()
   config.hostsupdater.aliases = $settings['aliases']
-  puts 'aliases'
-  puts config.hostsupdater.aliases
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
