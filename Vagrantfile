@@ -57,9 +57,9 @@ def getSites()
     site_data = YAML.load_file(site_file)
     site_name = site_data['site_name'].downcase.gsub(/[^a-zA-Z0-9]+/, '-')
     site_data['site_name'] = site_name
-    sites[site_name] = site_data
     site_domain = site_name + '.dev'
     site_aliases = [site_domain, 'www.' + site_domain]
+    site_data.delete('settings_php')
     if site_data['languages'] != nil
       site_data['languages'].each do |language|
         site_aliases.concat([language + '.' + site_domain])
@@ -82,6 +82,8 @@ def getSites()
       end
       $settings['shares'].push(folder)
     end
+    site_data['site_aliases'] = site_aliases.join(' ')
+    sites[site_name] = site_data
   end
   return sites
 end
@@ -137,7 +139,6 @@ Vagrant.configure(2) do |config|
   config.vm.synced_folder ".", "/vagrant",  :mount_options => ["dmode=777,fmode=766"]
   if $settings['shares'] != nil
     $settings['shares'].each do |item|
-      puts item
       if item['type'] != nil && item['type'] == 'rsync'
         config.vm.synced_folder item['local'].gsub('~', ENV['HOME']), item['vm'], owner: 'nginx', group: 'nginx', type: 'rsync', rsync__auto: true
       else

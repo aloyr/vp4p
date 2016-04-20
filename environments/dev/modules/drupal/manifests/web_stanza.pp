@@ -1,9 +1,10 @@
 class drupal::web_stanza {
   if defined('$::sites') {
     parsejson($::sites).each |String $key, Hash $value| {
-      notice("key: ${key} - hash: ${value}")
-      $site_name   = $value['site_name']
-      $site_domain = "${site_name}.dev"
+      # notice("key: ${key} - hash: ${value}")
+      $site_name    = $value['site_name']
+      $site_aliases = $value['site_aliases']
+      $site_domain  = "${site_name}.dev"
       file {$key:
         ensure  => 'file',
         notify  => Service['nginx'],
