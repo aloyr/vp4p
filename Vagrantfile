@@ -7,6 +7,17 @@ require 'socket'
 require 'timeout'
 require 'yaml'
 
+# implements input with prompt
+require "timeout"
+def gets_timeout( prompt, secs )
+  puts
+  print prompt + "[timeout=#{secs}secs]: "
+  Timeout::timeout( secs ) { STDIN.gets }
+rescue Timeout::Error
+  puts "*timeout"
+  nil  # return nil if timeout
+end
+
 # is the config file present? if not, halt execution as there is nothing to do!
 config_file = 'config.yml'
 raise Vagrant::Errors::VagrantError.new, "ERROR: config.yml file missing." if not Pathname(config_file).exist?
@@ -56,6 +67,22 @@ def getSites()
   Dir.glob('sites.d/*conf').each do |site_file|
     site_data = YAML.load_file(site_file)
     site_name = site_data['site_name'].downcase.gsub(/[^a-zA-Z0-9]+/, '-')
+    if site_data['database'] != nil
+      site_data['database'] = site_data['database'].gsub(/~/, ENV['HOME'])
+      if !File.exist? site_data['database']
+        raise Vagrant::Errors::VagrantError.new, "Configuration Error: database file '#{site_data['database']}' defined, but not found for site '#{site_name}'"
+      else
+        FileUtils.cp site_data['database'], 'data/' + site_name + '.sql'
+        site_data['database'] = '/vagrant/data/' + site_name + '.sql'
+        if ARGV.grep(/provision/).length > 0
+          puts 'If this is the first run, just wait or press <enter>.'
+          redodb = gets_timeout('Refresh database for ' + site_name + '? [y/N]', 3)
+          if redodb == 'Y' || redodb == 'y'
+            site_data['database_refresh'] = true
+          end
+        end
+      end
+    end
     site_data['site_name'] = site_name
     site_domain = site_name + '.dev'
     site_aliases = [site_domain, 'www.' + site_domain]
