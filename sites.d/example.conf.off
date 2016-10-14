@@ -13,7 +13,7 @@ languages:
   - 'ru'
   - 'zh-hans'
 
-database: 'example.sql'
+database: '~/Downloads/example.sql'
 
 settings_php:
   - "$conf['environment_indicator_text'] = 'DEV | USER';"
