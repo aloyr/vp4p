@@ -3,6 +3,9 @@ config.yml
 sites.d/*conf
 sites.d/*conf*
 !sites.d/example.conf.off
+sites.d/*yml
+sites.d/*yml*
+!sites.d/example.yml.off
 
 # Created by https://www.gitignore.io/api/vim,phpstorm
 
