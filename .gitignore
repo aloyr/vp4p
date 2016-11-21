@@ -1,5 +1,7 @@
 config.yml
 .vagrant
+data/*
+!data/example.sql
 sites.d/*conf
 sites.d/*conf*
 !sites.d/example.conf.off
