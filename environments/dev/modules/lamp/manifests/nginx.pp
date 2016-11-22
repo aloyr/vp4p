@@ -15,4 +15,10 @@ class lamp::nginx {
     ensure  => 'running',
     require => Package['nginx'],
   }
+
+  service {'php-fpm':
+    enable  => 'true',
+    ensure  => 'running',
+    require => Package['php-fpm'],
+  }
 }
