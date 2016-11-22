@@ -3,6 +3,8 @@
 # site root in the vm, which will be /var/www/<site_name>, the
 # database name, etc...
 # the site will also be reachable via www.<site_name>.dev
+# your local hosts file will be modified to include entries for
+# these names
 site_name: 'example'
 
 # site_root_local must point to an existing folder on your workstation
