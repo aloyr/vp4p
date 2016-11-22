@@ -1,7 +1,7 @@
 # site_name is used as primary key for several items in the setup,
 # including the domain name, which will be <site_name>.dev, the
-# site root in the vm, which will be /var/www/<site_name>, the
-# database name, etc...
+# site document root in the vm, which will be /var/www/<site_name>,
+# the database name, etc...
 # the site will also be reachable via www.<site_name>.dev
 # your local hosts file will be modified to include entries for
 # these names
