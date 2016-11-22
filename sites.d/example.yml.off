@@ -1,7 +1,21 @@
+# site_name is used as primary key for serveral items in the setup,
+# including the domain name, which will be <site_name>.dev, the
+# site root in the vm, which will be /var/www/<site_name>, the
+# database name, etc...
+# the site will also be reachable via www.<site_name>.dev
 site_name: 'example'
+
+# site_root_local must point to an existing folder on your workstation
+# this will be mapped to
 site_root_local: '~/Sites/example'
+
+# optionally, name the file system sync via rsync by uncommenting the
+# line below:
 # site_root_type: 'rsync'
 
+# optionally define additional language URLs with the languages setting
+# below. each entry in the list will be appended to the main site url.
+# e.g.: en.<site_name>.dev, de.<site_name>.dev, etc...
 languages:
   - 'en'
   - 'de'
@@ -13,8 +27,13 @@ languages:
   - 'ru'
   - 'zh-hans'
 
+# optionally, define a database file to be used. this can reside anywhere
+# on your workstation, but it will be copied to the data/<site_name>.sql
+# path on the first time it is launched.
 database: 'data/example.sql'
 
+# optionally use settings_php to define customizations to the settings.php
+# file of this site.
 settings_php:
   - "$conf['environment_indicator_text'] = 'DEV | USER';"
   - "$conf['environment_indicator_color'] = 'dark-red';"
