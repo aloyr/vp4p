@@ -11,7 +11,7 @@ You don't need to setup a database, you can start with plain files.
 ## Minimal setup
 ```bash
 cp {example_,}config.yml
-cp sites.d/example.yml{.off,} # <== at the very least, modify the **site\_root\_local** line
+cp sites.d/example.yml{.off,} # <== at the very least, modify the site_root_local line
 vagrant up
 ```
 
