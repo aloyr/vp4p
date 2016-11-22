@@ -1,4 +1,4 @@
-# site_name is used as primary key for serveral items in the setup,
+# site_name is used as primary key for several items in the setup,
 # including the domain name, which will be <site_name>.dev, the
 # site root in the vm, which will be /var/www/<site_name>, the
 # database name, etc...
