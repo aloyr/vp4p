@@ -1,125 +1,6 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-Dir.chdir(File.dirname(__FILE__))
-
-require 'json'
-require 'pathname'
-require 'socket'
-require 'timeout'
-require 'yaml'
-
-# implements input with prompt
-require "timeout"
-def gets_timeout( prompt, secs )
-  puts
-  print prompt + "[timeout=#{secs}secs]: "
-  Timeout::timeout( secs ) { STDIN.gets }
-rescue Timeout::Error
-  puts "*timeout"
-  nil  # return nil if timeout
-end
-
-# is the config file present? if not, halt execution as there is nothing to do!
-config_file = 'config.yml'
-raise Vagrant::Errors::VagrantError.new, "ERROR: config.yml file missing." if not Pathname(config_file).exist?
-
-# setup settings variable and some defaults
-$settings = YAML.load_file(config_file)
-
-# define default values
-$defaults = {
-  'box'            => 'vp4p/fedora22',
-  'box_url'        => 'http://hid.gl/vp4p-fedora22.box',
-  'database_cache' => '128M',
-  'database_pool'  => '1G',
-  'hostip'         => '192.168.35.12',
-  'hostname'       => Socket.gethostname + '.dev',
-  'memory'         => '2048',
-  'timezone'       => 'America/Chicago',
-}
-
-# sanity checks to the yaml configuration file
-def checkPlugin(pluginName)
-  unless Vagrant.has_plugin?(pluginName)
-    raise Vagrant::Errors::VagrantError.new, pluginName + ' plugin missing. Install it with "sudo vagrant plugin install ' + pluginName + '"'
-  end
-end
-
-['vagrant-cachier', 'vagrant-hostsupdater', 'vagrant-triggers'].each do |plugin|
-  checkPlugin(plugin)
-end
-
-# get settings value, or default if not set
-def getSetting(value)
-  if $settings[value] == nil && $defaults[value] == nil
-    raise Vagrant::Errors::VagrantError.new, "Configuration Error: #{$setting['name']} not defined in config.yml file, setup cannot continue"
-  else
-    if $settings[value] != nil
-      return $settings[value]
-    else
-      return $defaults[value]
-    end
-  end
-end
-
-# process site configurations
-def getSites()
-  sites = {}
-  Dir.glob('sites.d/*yml').each do |site_file|
-    site_data = YAML.load_file(site_file)
-    site_name = site_data['site_name'].downcase.gsub(/[^a-zA-Z0-9]+/, '-')
-    if site_data['database'] != nil
-      site_data['database'] = site_data['database'].gsub(/~/, ENV['HOME'])
-      if !File.exist? site_data['database']
-        raise Vagrant::Errors::VagrantError.new, "Configuration Error: database file '#{site_data['database']}' defined, but not found for site '#{site_name}'"
-      else
-        if site_data['database'] != 'data/' + site_name + '.sql'
-          FileUtils.cp site_data['database'], 'data/' + site_name + '.sql'
-        end
-        site_data['database'] = '/vagrant/data/' + site_name + '.sql'
-        if ARGV.grep(/provision/).length > 0
-          puts 'If this is the first run, just wait or press <enter>.'
-          redodb = gets_timeout('Refresh database for ' + site_name + '? [y/N]', 3)
-          if redodb == 'Y' || redodb == 'y'
-            site_data['database_refresh'] = true
-          end
-        end
-      end
-    end
-    site_data['site_name'] = site_name
-    site_domain = site_name + '.dev'
-    site_aliases = [site_domain, 'www.' + site_domain]
-    site_data.delete('settings_php')
-    if site_data['languages'] != nil
-      site_data['languages'].each do |language|
-        site_aliases.concat([language + '.' + site_domain])
-      end
-    end
-    if $settings['aliases'] == nil
-      $settings['aliases'] = []
-    end
-    $settings['aliases'].concat(site_aliases)
-    if site_data['site_root_local'] != nil
-      if $settings['shares'] == nil
-        $settings['shares'] = []
-      end
-      folder = {
-        'local' => site_data['site_root_local'],
-        'vm'    => '/var/www/' + site_name
-      }
-      if site_data['site_root_type'] != nil
-        folder['type'] = site_data['site_root_type']
-      end
-      $settings['shares'].push(folder)
-    end
-    site_data['site_aliases'] = site_aliases.join(' ')
-    sites[site_name] = site_data
-  end
-  return sites
-end
-
-
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
 # backwards compatibility). Please don't change it unless you know what
@@ -245,4 +126,135 @@ Vagrant.configure(2) do |config|
    end
   end
 
+end
+# End of Vagrantfile setup
+
+# Begin custom code
+
+# make sure we are on the correct folder before proceeding
+Dir.chdir(File.dirname(__FILE__))
+
+require 'json'
+require 'pathname'
+require 'socket'
+require 'timeout'
+require 'yaml'
+
+# implements input with prompt
+def gets_timeout( prompt, secs )
+  puts
+  print prompt + "[timeout=#{secs}secs]: "
+  Timeout::timeout( secs ) { STDIN.gets }
+rescue Timeout::Error
+  puts "*timeout"
+  nil  # return nil if timeout
+end
+
+# is the config file present? if not, halt execution as there is nothing to do!
+config_file = 'config.yml'
+raise Vagrant::Errors::VagrantError.new, "ERROR: config.yml file missing." if not Pathname(config_file).exist?
+
+# setup settings variable and some defaults
+$settings = YAML.load_file(config_file)
+
+# define default values
+$defaults = {
+  'box'            => 'vp4p/fedora22',
+  'box_url'        => 'http://hid.gl/vp4p-fedora22.box',
+  'database_cache' => '128M',
+  'database_pool'  => '1G',
+  'hostip'         => '192.168.35.12',
+  'hostname'       => Socket.gethostname + '.dev',
+  'memory'         => '2048',
+  'timezone'       => 'America/Chicago',
+}
+
+# sanity checks to the yaml configuration file
+def checkPlugin(pluginName)
+  unless Vagrant.has_plugin?(pluginName)
+    raise Vagrant::Errors::VagrantError.new, pluginName + ' plugin missing. Install it with "sudo vagrant plugin install ' + pluginName + '"'
+  end
+end
+
+# make sure we have the necessary plugins installed
+['vagrant-cachier', 'vagrant-hostsupdater', 'vagrant-triggers'].each do |plugin|
+  checkPlugin(plugin)
+end
+
+# get settings value, or default if not set
+def getSetting(value)
+  if $settings[value] == nil && $defaults[value] == nil
+    raise Vagrant::Errors::VagrantError.new, "Configuration Error: #{$setting['name']} not defined in config.yml file, setup cannot continue"
+  else
+    if $settings[value] != nil
+      return $settings[value]
+    else
+      return $defaults[value]
+    end
+  end
+end
+
+# process site configurations
+def getSites()
+  sites = {}
+  # read configuration files from sites.d folder
+  Dir.glob('sites.d/*yml').each do |site_file|
+    site_data = YAML.load_file(site_file)
+    site_name = site_data['site_name'].downcase.gsub(/[^a-zA-Z0-9]+/, '-')
+    # check if the site defines a database
+    # if so, import it into mariadb
+    if site_data['database'] != nil
+      site_data['database'] = site_data['database'].gsub(/~/, ENV['HOME'])
+      if !File.exist? site_data['database']
+        raise Vagrant::Errors::VagrantError.new, "Configuration Error: database file '#{site_data['database']}' defined, but not found for site '#{site_name}'"
+      else
+        if site_data['database'] != 'data/' + site_name + '.sql'
+          FileUtils.cp site_data['database'], 'data/' + site_name + '.sql'
+        end
+        site_data['database'] = '/vagrant/data/' + site_name + '.sql'
+        if ARGV.grep(/provision/).length > 0
+          puts 'If this is the first run, just wait or press <enter>.'
+          redodb = gets_timeout('Refresh database for ' + site_name + '? [y/N]', 3)
+          if redodb == 'Y' || redodb == 'y'
+            site_data['database_refresh'] = true
+          end
+        end
+      end
+    end
+    # prepare site data
+    site_data['site_name'] = site_name
+    site_domain = site_name + '.dev'
+    site_aliases = [site_domain, 'www.' + site_domain]
+    site_data.delete('settings_php')
+    # handle languages, if defined
+    if site_data['languages'] != nil
+      site_data['languages'].each do |language|
+        site_aliases.concat([language + '.' + site_domain])
+      end
+    end
+    # handle aliases, if defined
+    if $settings['aliases'] == nil
+      $settings['aliases'] = []
+    end
+    $settings['aliases'].concat(site_aliases)
+    # handle shared folders, if defined
+    if site_data['site_root_local'] != nil
+      if $settings['shares'] == nil
+        $settings['shares'] = []
+      end
+      folder = {
+        'local' => site_data['site_root_local'],
+        'vm'    => '/var/www/' + site_name
+      }
+      if site_data['site_root_type'] != nil
+        folder['type'] = site_data['site_root_type']
+      end
+      $settings['shares'].push(folder)
+    end
+    # add current site data to overall site array
+    # before looping to the next site configuration file
+    site_data['site_aliases'] = site_aliases.join(' ')
+    sites[site_name] = site_data
+  end
+  return sites
 end
