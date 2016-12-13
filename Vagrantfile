@@ -126,6 +126,29 @@ Vagrant.configure(2) do |config|
    end
   end
 
+  # provisioning build triggers below
+  vagstring = ' ## vagrant-provisioner' + "\n"
+  config.trigger.before [:provision, :up, :resume] do
+    puts 'Running before provision triggers'
+    sites.each do |site|
+      # adjustSettingsFile settings, vagstring
+      adjustDrushAliasFile site[1], vagstring
+    end
+    puts 'Synching changed files'
+    `vagrant rsync`
+  end
+
+  # provisioning teardown triggers below
+  config.trigger.before [:destroy, :halt, :suspend] do
+    puts 'Running before destroy triggers'
+    sites.each do |site|
+      # resetSettingsFile settings, vagstring
+      resetDrushAliasFile site[1], vagstring
+    end
+    puts 'Synching changed files'
+    `vagrant rsync`
+  end
+
 end
 # End of Vagrantfile setup
 
@@ -190,6 +213,46 @@ def getSetting(value)
       return $settings[value]
     else
       return $defaults[value]
+    end
+  end
+end
+
+# reset drush alias file
+def resetDrushAliasFile settings, vagstring
+  settingsfile = '~/.drush/vagrant.aliases.drushrc.php'.gsub('~', ENV['HOME'])
+  removeString = vagstring.gsub("\n",'') + '-' + settings['site_name']
+  if File.file?settingsfile
+    tagstring = vagstring.gsub("\n",'') + "-" + settings['site_name'] + "\n"
+    puts 'Restoring drush alias file for ' + settings['site_name']
+    File.chmod(0666, settingsfile)
+    settingslines = File.open(settingsfile,'r').readlines()
+    writefile = File.open(settingsfile,'w+')
+    settingslines.each do |line|
+      writefile.write(line) if line !~ /#{tagstring}/
+    end
+    writefile.close()
+  end
+end
+
+# add vagrant aliases to drush
+def adjustDrushAliasFile settings, vagstring
+  resetDrushAliasFile settings, vagstring
+  puts 'Adjusting drush alias file for ' + settings['site_name']
+  settingsfile = '~/.drush/vagrant.aliases.drushrc.php'.gsub('~', ENV['HOME'])
+  if not File.file?settingsfile
+    File.open(settingsfile, 'w+') do |writefile|
+      writefile.puts '<?php'
+    end
+  end
+  File.chmod(0666, settingsfile)
+  if settings['site_name'] != nil
+    tagstring = vagstring.gsub("\n",'') + "-" + settings['site_name'] + "\n"
+    File.open(settingsfile,'a+') do |writefile|
+      writefile.puts "$aliases['#{settings['site_name']}'] = array(              #{tagstring}"
+      writefile.puts "  'root'         => '/var/www/#{settings['site_name']}',   #{tagstring}"
+      writefile.puts "  'uri'          => 'http://#{settings['site_name']}.dev', #{tagstring}"
+      writefile.puts "  'remote-host'  => '#{settings['site_name']}.dev',        #{tagstring}"
+      writefile.puts ");                                                         #{tagstring}"
     end
   end
 end
