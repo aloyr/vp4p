@@ -131,7 +131,7 @@ Vagrant.configure(2) do |config|
   config.trigger.before [:provision, :up, :resume] do
     puts 'Running before provision triggers'
     sites.each do |site|
-      # adjustSettingsFile settings, vagstring
+      adjustSettingsFile site[1], vagstring
       adjustDrushAliasFile site[1], vagstring
     end
     puts 'Synching changed files'
@@ -142,7 +142,7 @@ Vagrant.configure(2) do |config|
   config.trigger.before [:destroy, :halt, :suspend] do
     puts 'Running before destroy triggers'
     sites.each do |site|
-      # resetSettingsFile settings, vagstring
+      resetSettingsFile site[1], vagstring
       resetDrushAliasFile site[1], vagstring
     end
     puts 'Synching changed files'
@@ -257,6 +257,61 @@ def adjustDrushAliasFile settings, vagstring
   end
 end
 
+# resets settings.php file for a site
+def resetSettingsFile settings, vagstring
+  settingsfile = settings['site_root_local'].gsub('~', ENV['HOME']) + '/sites/default/settings.php'
+  removeString = vagstring.gsub("\n",'')
+  if File.file?settingsfile
+    puts 'Restoring settings.php file'
+    File.chmod(0666, settingsfile)
+    settingslines = File.open(settingsfile,'r').readlines()
+    writefile = File.open(settingsfile,'w+')
+    settingslines.each do |line|
+      writefile.write(line) if line !~ /#{removeString}/
+    end
+    writefile.close()
+  end
+end
+
+# adjusts settings.php file for a site
+def adjustSettingsFile settings, vagstring
+  settingsfile = settings['site_root_local'].gsub('~', ENV['HOME']) + '/sites/default/settings.php'
+  if not File.file?settingsfile
+    defsettingsfile = settings['site_root_local'].gsub('~', ENV['HOME']) + '/sites/default/default.settings.php'
+    FileUtils.cp(defsettingsfile, settingsfile)
+  else
+    resetSettingsFile settings, vagstring
+  end
+  puts 'Adjusting settings.php file'
+  File.chmod(0666, settingsfile)
+  settingslines = File.open(settingsfile,'r').readlines()
+  writefile = File.open(settingsfile,'w+')
+  settingslines.each do |line|
+    writefile.write(line) if line !~ /#{vagstring}/
+  end
+  if settings['settings_php'] != nil
+    settings['settings_php'].each do |settingline|
+      writefile.write(settingline.gsub('USER', ENV['USER'].upcase) + vagstring)
+    end
+  end
+  defaultDB = "$databases['default']['default'] = array("
+  defaultDB += "'driver' => 'mysql',"
+  defaultDB += "'database' => '" + settings['site_name'] + "',"
+  defaultDB += "'username' => '" + settings['site_name'] + "',"
+  defaultDB += "'password' => '" + settings['site_name'] + "',"
+  defaultDB += "'host' => '127.0.0.1',"
+  defaultDB += "'prefix' => '',"
+  defaultDB += ");" + vagstring
+  writefile.write(defaultDB)
+  if settings['languages'] != nil
+    settings['languages'].each do |lang|
+      line = "$conf['language_domains']['#{lang}'] = 'http://#{lang}.#{settings['site_name']}.dev'; #{vagstring}"
+      writefile.write(line)
+    end
+  end 
+  writefile.close()
+end
+
 # process site configurations
 def getSites()
   sites = {}
@@ -288,7 +343,6 @@ def getSites()
     site_data['site_name'] = site_name
     site_domain = site_name + '.dev'
     site_aliases = [site_domain, 'www.' + site_domain]
-    site_data.delete('settings_php')
     # handle languages, if defined
     if site_data['languages'] != nil
       site_data['languages'].each do |language|
